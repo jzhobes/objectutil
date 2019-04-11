@@ -1,0 +1,26 @@
+{
+  "name": "objectutil",
+  "version": "1.0.0",
+  "description": "A handy collection of methods related to manipulating objects.",
+  "main": "objectutil.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jzhobes/objectutil.git"
+  },
+  "keywords": [
+    "javascript",
+    "objectutil"
+  ],
+  "author": "John Ho",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jzhobes/objectutil/issues"
+  },
+  "homepage": "https://github.com/jzhobes/objectutil",
+  "devDependencies": {
+    "jest": "^24.7.1"
+  }
+}
