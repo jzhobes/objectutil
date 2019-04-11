@@ -4,16 +4,19 @@
  * Performs a deep clone of an array.
  *
  * @private
- * @param {Array} input The input array to clone.
+ * @param {Array} array The input array to clone.
  * @returns {Array}
  */
-const _cloneArray = (input) => {
+const _cloneArray = (array) => {
     const output = [];
-    Object.keys(input).forEach(key => {
+    Object.keys(array).forEach(key => {
+        // Clone the standard indexed elements.
         if (!isNaN(key)) {
-            output.push(clone(input[key]));
-        } else {
-            output[key] = clone(input[key]);
+            output.push(clone(array[key]));
+        }
+        // Clone any properties added to the array.
+        else {
+            output[key] = clone(array[key]);
         }
     });
     return output;
@@ -23,16 +26,16 @@ const _cloneArray = (input) => {
  * Performs a deep clone of an object.
  *
  * @private
- * @param {Object} input The input object to clone.
+ * @param {Object} object The input object to clone.
  * @returns {Object}
  */
-const _cloneObject = (input) => {
-    if (input instanceof Date) {
-        return new Date(input.getTime());
+const _cloneObject = (object) => {
+    if (object instanceof Date) {
+        return new Date(object.getTime());
     } else {
         const output = {};
-        Object.keys(input).forEach(key => {
-            output[key] = clone(input[key]);
+        Object.keys(object).forEach(key => {
+            output[key] = clone(object[key]);
         });
         return output;
     }
@@ -63,93 +66,137 @@ const clone = (input) => {
 /**
  * Similar to Array.filter, but for objects. The filter function will iterate through every key in the object.
  *
- * @param {Object} input The input object.
+ * @param {Object} object The input object.
  * @param {function} filterFunction The filter function.
  */
-const filter = (input, filterFunction) => {
-    return Object.keys(input).filter(filterFunction).reduce((filteredMap, key) => {
-        filteredMap[key] = input[key];
+const filter = (object, filterFunction) => {
+    return Object.keys(object).filter(filterFunction).reduce((filteredMap, key) => {
+        filteredMap[key] = object[key];
         return filteredMap;
     }, {});
 };
 
-/**
- * Looks up and returns an object's nested attribute value by string (e.g. getByString({a: {b: {c: {d: 'value'}}}}, 'a.b.c.d') will return the string 'value').
- *
- * @param {Object} object The object to check.
- * @param {string} namedString The dot-notation named string.
- * @returns {*}
- */
-const getByString = (object, namedString) => {
-    return namedString.split('.').reduce((o, i) => o[i], object);
-};
+// Inaccessible wrap key to unwrap with.
+const wrapKey = Symbol();
 
 /**
- * Takes the provided input, checks its type, and returns an empty version of it.
+ * The underlying safe wrap implementation.
  *
- * @param {*} input The input to check.
+ * @param {Object} input The object to wrap.
  * @returns {*}
  */
-const createEmptyInstance = (input) => {
-    const dataType = Array.isArray(input) ? 'array' : typeof input;
-    let emptyData;
-    if (dataType === 'array') {
-        emptyData = [];
-    } else if (dataType === 'object') {
-        emptyData = {};
-    } else if (dataType === 'string') {
-        emptyData = '';
-    } else {
-        emptyData = undefined;
+const _safeWrap = (input) => {
+    // Just return the input if it's already wrapped.
+    if (input && input[wrapKey]) {
+        return input;
     }
-    return emptyData;
+    // Wrap non-object values to further allow proxying.
+    const isObject = typeof input === 'object' && input !== null;
+    if (!isObject) {
+        input = {
+            [wrapKey]: {
+                value: input
+            }
+        };
+    }
+
+    return new Proxy(input, {
+        get: (target, key) => {
+            if (key === wrapKey) {
+                if (target[wrapKey]) {
+                    return target[wrapKey].value;
+                }
+                return target;
+            }
+            return safeWrap(target[key]);
+        }
+    });
 };
 
 /**
- * Clones the provided list of items and attempts to update the old item with the updated item by the specified attribute. If not found, then the item will be appended to the cloned array.
+ * Wraps an object to safely return any object property, ignoring any undefined errors. This is analogous to using the existential operator in TypeScript.
+ *
+ * @param {Object} input The object to wrap.
+ * @returns {*}
+ */
+const safeWrap = (input) => {
+    return _safeWrap(clone(input));
+};
+
+/**
+ * Unwraps a safeWrapped object.
+ *
+ * @param {Object} wrappedInput The wrapped input object.
+ * @returns {*}
+ */
+const unwrap = (wrappedInput) => {
+    return wrappedInput[wrapKey];
+};
+
+/**
+ * Clones the provided array of objects and attempts to update the old object with the updated object by the specified key. If key is not provided, defaults to 'id'.
+ *
+ * @private
+ * @param {Array} items The array of items to clone from.
+ * @param {Object} updatedObject The updated object to mix in.
+ * @param {string} [key] The object key to target with. Defaults to 'id'.
+ * @returns {Object}
+ */
+const _updateIn = (array, updatedObject, key = 'id') => {
+    const clonedArray = clone(array || []);
+    const results = {
+        updated: false,
+        array: clonedArray
+    };
+    if (updatedObject) {
+        results.updated = clonedArray.some((object, i) => {
+            if (updatedObject[key] === object[key]) {
+                clonedArray[i] = {
+                    ...clonedArray[i],
+                    ...clone(updatedObject)
+                };
+                return true;
+            }
+            return false;
+        });
+    }
+    return results;
+};
+
+/**
+ * Clones the provided array of objects and attempts to update the old object with the updated object by the specified key. If key is not provided, defaults to 'id'.
+ *
+ * @param {Array} items The array of items to clone from.
+ * @param {Object} updatedObject The updated object to mix in.
+ * @param {string} [key] The object key to target with. Defaults to 'id'.
+ * @returns {Array}
+ */
+const updateIn = (array, updatedObject, key = 'id') => {
+    return _updateIn(array, updatedObject, key).array;
+};
+
+/**
+ * Same as updateIn, but if the object to update is not in the array, it will be appended to the cloned array.
  *
  * @param {Array} items The list of items to clone from.
  * @param {Object} updatedOrNewItem The new item to update or add.
  * @param {string} [attribute] The attribute key to use. Defaults to 'id'.
  * @returns {Array}
  */
-const updateOrInsertByAttribute = (items, updatedOrNewItem, attribute = 'id') => {
-    const clonedArray = clone(items || []);
-    if (updatedOrNewItem) {
-        const isUpdate = clonedArray.some((item, i) => {
-            if (updatedOrNewItem && updatedOrNewItem[attribute] === item[attribute]) {
-                clonedArray[i] = {
-                    ...clonedArray[i],
-                    ...updatedOrNewItem
-                };
-                return true;
-            }
-            return false;
-        });
-        // If nothing was updated, then append to the cloned array.
-        if (!isUpdate) {
-            clonedArray.push(updatedOrNewItem);
-        }
+const updateOrAppend = (array, updatedObject, key = 'id') => {
+    const results = _updateIn(array, updatedObject, key);
+    // If nothing was updated, then append to the cloned array.
+    if (!results.updated && updatedObject) {
+        results.array.push(clone(updatedObject));
     }
-    return clonedArray;
-};
-
-/**
- * Clones the provided list of items and attempts to update the old item with the updated item by id. If not found, then the item will be appended to the cloned array.
- *
- * @param {Array} items The list of items to clone from.
- * @param {Object} updatedOrNewItem The new item to update or add.
- * @returns {Array}
- */
-const updateOrInsertById = (items, updatedOrNewItem) => {
-    return updateOrInsertByAttribute(items, updatedOrNewItem, 'id');
+    return results.array;
 };
 
 module.exports = {
     clone,
-    createEmptyInstance,
     filter,
-    getByString,
-    updateOrInsertByAttribute,
-    updateOrInsertById
+    safeWrap,
+    unwrap,
+    updateIn,
+    updateOrAppend
 };

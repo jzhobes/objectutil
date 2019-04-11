@@ -3,7 +3,7 @@
 A handy collection of methods related to manipulating objects.
 
 ### clone
-Performs a deep copy of the provided input.
+Performs a deep copy of the provided input. Supported data types at the moment are: Object, Array, Date, string, number, boolean, and function.
 ```javascript
 const {clone} = require('objectutil');
 
@@ -20,19 +20,24 @@ filter({key1: 'foo', key2: 'bar', key3: 'baz'}, (key) => key !== 'key2');
 // => {key1: 'foo', key3: 'baz'}
 ```
 
-### getByString
-Looks up and returns an object's nested attribute value by string.
+### safeWrap / unwrap
+Wraps an object to safely return any object property, ignoring any undefined errors. This is analogous to using the existential operator in TypeScript.
 ```javascript
-const {getByString} = require('objectutil');
+const {safeWrap, unwrap} = require('objectutil');
 
-getByString({a: {b: {c: {d: 'value'}}}}, 'a.b.c.d')
+const input = {a: {b: {c: {d: 'value'}}}};
+const wrappedInput = safeWrap(input);
+unwrap(wrappedInput.a.b.c.d.e.f.g.h)
+// => undefined
+unwrap(wrappedInput.a.b.c.d)
 // => 'value'
+
 ```
 
-### updateOrInsertByAttribute
-Clones the provided list of items and attempts to update the old item with the updated item by the specified attribute. If not found, then the item will be appended to the cloned array.
+### updateIn
+Clones the provided array of objects and attempts to update the old object with the updated object by the specified key. If key is not provided, defaults to 'id'.
 ```javascript
-const {getByString} = require('objectutil');
+const {updateIn} = require('objectutil');
 
 const original = [{
     uuid: 0,
@@ -49,7 +54,7 @@ const item = {
     value: false,
     attribute: ''
 };
-updateOrInsertByAttribute(original, item, 'uuid');
+updateIn(original, item, 'uuid');
 /** =>
 {
     uuid: 1,
@@ -61,3 +66,5 @@ updateOrInsertByAttribute(original, item, 'uuid');
 */
 ```
 
+### updateOrAppend
+Same as updateIn, but if the object to update is not in the array, it will be appended to the cloned array.
