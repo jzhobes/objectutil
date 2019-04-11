@@ -2,7 +2,7 @@
 
 A handy collection of methods related to manipulating objects.
 
-# clone
+### clone
 Performs a deep copy of the provided input.
 ```javascript
 const {clone} = require('objectutil');
@@ -11,7 +11,7 @@ const {clone} = require('objectutil');
 clone([{name: 'John'}, {name: 'Jane'}, {name: 'Bob'}, 'foobar', 42, () => console.log('hello world')]);
 ```
 
-## filter
+### filter
 Similar to Array.filter, but for objects. The filter function will iterate through every key in the object.
 ```javascript
 const {filter} = require('objectutil');
@@ -20,7 +20,7 @@ filter({key1: 'foo', key2: 'bar', key3: 'baz'}, (key) => key !== 'key2');
 // => {key1: 'foo', key3: 'baz'}
 ```
 
-## getByString
+### getByString
 Looks up and returns an object's nested attribute value by string.
 ```javascript
 const {getByString} = require('objectutil');
@@ -29,7 +29,7 @@ getByString({a: {b: {c: {d: 'value'}}}}, 'a.b.c.d')
 // => 'value'
 ```
 
-## updateOrInsertByAttribute
+### updateOrInsertByAttribute
 Clones the provided list of items and attempts to update the old item with the updated item by the specified attribute. If not found, then the item will be appended to the cloned array.
 ```javascript
 const {getByString} = require('objectutil');
