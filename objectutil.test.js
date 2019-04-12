@@ -1,5 +1,5 @@
 /* global afterEach, beforeEach, describe, expect, require, test */
-const {clone, filter, safeWrap, unwrap, updateOrAppend} = require('./objectutil');
+const {clone, filter, toArray, toObject, safeWrap, unwrap, updateOrAppend} = require('./objectutil');
 
 describe('#clone', () => {
 
@@ -71,6 +71,84 @@ describe('#filter', () => {
             foo: 'bar',
             quux: 'quuz'
         });
+    });
+});
+
+describe('#toArray', () => {
+
+    test('throws an error if argument is not an object', () => {
+        expect(() => toObject()).toThrow();
+        expect(() => toObject(null)).toThrow();
+        expect(() => toObject('')).toThrow();
+        expect(() => toObject(new Date())).toThrow();
+        expect(() => toObject(1)).toThrow();
+    });
+
+    test('converts object to array', () => {
+        const input = {
+            '0': 'foo',
+            '1': 'bar'
+        };
+        expect(toArray(input)).toEqual(['foo', 'bar']);
+    });
+
+    test('uses custom mapper function if provided', () => {
+        const input = {
+            '0': {name: 'foo'},
+            '1': {name: 'bar'}
+        };
+        const output = toArray(input, (current) => current.name);
+        expect(output).toEqual(['foo', 'bar']);
+    });
+});
+
+describe('#toObject', () => {
+
+    test('throws an error if argument is not an array', () => {
+        expect(() => toObject()).toThrow();
+        expect(() => toObject(null)).toThrow();
+        expect(() => toObject({})).toThrow();
+        expect(() => toObject('')).toThrow();
+        expect(() => toObject(new Date())).toThrow();
+        expect(() => toObject(1)).toThrow();
+    });
+
+    test('defaults to string index if key is not provided', () => {
+        const input = [{}, {}, {}];
+        expect(Object.keys(toObject(input)).every((key, i) => key === String(i))).toBe(true);
+    });
+
+    test('converts array to object if key is provided', () => {
+        const input = [
+            {
+                id: 0,
+                name: 'test falsy 0'
+            },
+            {
+                id: false,
+                name: 'test false'
+            },
+            {
+                id: 'foobar',
+                name: 'test happy path'
+            }
+        ];
+        const output = toObject(input, 'id');
+        expect(output['0']).toEqual(input[0]);
+        expect(output['false']).toEqual(input[1]);
+        expect(output.foobar).toEqual(input[2]);
+    });
+
+    test('returned object uses custom mapper function if provided', () => {
+        const input = [{
+            code: '001',
+            country: 'United States',
+            area: '3.797 million mi^2',
+            capital: 'Washington, D.C.',
+            continent: 'North America'
+        }];
+        const output = toObject(input, 'code', (country) => country.country);
+        expect(output['001']).toEqual(input[0].country);
     });
 });
 

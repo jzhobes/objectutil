@@ -76,6 +76,43 @@ const filter = (object, filterFunction) => {
     }, {});
 };
 
+/**
+ * Converts an object to an array. The optional 2rd argument is a custom mapper function to return just a specific
+ * subset of each element.
+ *
+ * @param {Object} object The object to convert.
+ * @param {function} [mapper] Optional mapper function to execute on each value in the object to map specific
+ * elements. Syntax: `mapper(currentKey[, i]`.
+ * @returns {Object}
+ */
+const toArray = (object, mapper) => {
+    const isObject = typeof object === 'object' && object !== null;
+    if (!isObject) {
+        throw new Error('Method argument is not an object.');
+    }
+    return Object.keys(object).map((key, i) => mapper ? mapper(object[key], i) : object[key]);
+};
+
+/**
+ * Converts an array to an object. The 2nd argument is the key name to use. Defaults to a string index if not
+ * provided. Optional 3rd argument is a custom mapper function to return just a specific subset of the object.
+ *
+ * @param {Array} array The array to iterate through.
+ * @param {string} [key] The name to use as the object key. Defaults to a string index if not provided.
+ * @param {function} [mapper] Optional mapper function to execute on each object in the array to map specific
+ * elements. Syntax: `mapper(currentValue[, i]`.
+ * @returns {Object}
+ */
+const toObject = (array, key, mapper) => {
+    if (!Array.isArray(array)) {
+        throw new Error('Method argument is not an array.');
+    }
+    return array.reduce((accumulator, currentValue, i) => {
+        accumulator[key ? String(currentValue[key]) : String(i)] = mapper ? mapper(currentValue, i) : currentValue;
+        return accumulator;
+    }, {});
+};
+
 // Inaccessible wrap key to unwrap with.
 const wrapKey = Symbol();
 
@@ -114,7 +151,8 @@ const _safeWrap = (input) => {
 };
 
 /**
- * Wraps an object to safely return any object property, ignoring any undefined errors. This is analogous to using the existential operator in TypeScript.
+ * Wraps an object to safely return any object property, ignoring any undefined errors. This is analogous to using
+ * the existential operator in TypeScript.
  *
  * @param {Object} input The object to wrap.
  * @returns {*}
@@ -134,10 +172,11 @@ const unwrap = (wrappedInput) => {
 };
 
 /**
- * Clones the provided array of objects and attempts to update the old object with the updated object by the specified key. If key is not provided, defaults to 'id'.
+ * Clones the provided array of objects and attempts to update the old object with the updated object by the
+ * specified key. If key is not provided, defaults to 'id'.
  *
  * @private
- * @param {Array} items The array of items to clone from.
+ * @param {Array} array The array of items to clone from.
  * @param {Object} updatedObject The updated object to mix in.
  * @param {string} [key] The object key to target with. Defaults to 'id'.
  * @returns {Object}
@@ -164,9 +203,10 @@ const _updateIn = (array, updatedObject, key = 'id') => {
 };
 
 /**
- * Clones the provided array of objects and attempts to update the old object with the updated object by the specified key. If key is not provided, defaults to 'id'.
+ * Clones the provided array of objects and attempts to update the old object with the updated object by the
+ * specified key. If key is not provided, defaults to 'id'.
  *
- * @param {Array} items The array of items to clone from.
+ * @param {Array} array The array of items to clone from.
  * @param {Object} updatedObject The updated object to mix in.
  * @param {string} [key] The object key to target with. Defaults to 'id'.
  * @returns {Array}
@@ -178,9 +218,9 @@ const updateIn = (array, updatedObject, key = 'id') => {
 /**
  * Same as updateIn, but if the object to update is not in the array, it will be appended to the cloned array.
  *
- * @param {Array} items The list of items to clone from.
- * @param {Object} updatedOrNewItem The new item to update or add.
- * @param {string} [attribute] The attribute key to use. Defaults to 'id'.
+ * @param {Array} array The list of items to clone from.
+ * @param {Object} updatedObject The new item to update or add.
+ * @param {string} [key] The attribute key to use. Defaults to 'id'.
  * @returns {Array}
  */
 const updateOrAppend = (array, updatedObject, key = 'id') => {
@@ -195,6 +235,8 @@ const updateOrAppend = (array, updatedObject, key = 'id') => {
 module.exports = {
     clone,
     filter,
+    toArray,
+    toObject,
     safeWrap,
     unwrap,
     updateIn,

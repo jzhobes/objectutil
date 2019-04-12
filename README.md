@@ -7,8 +7,16 @@ Performs a deep copy of the provided input. Supported data types at the moment a
 ```javascript
 const {clone} = require('objectutil');
 
-// Cloneable data types: Object, Array, string, number, boolean, and function.
-clone([{name: 'John'}, {name: 'Jane'}, {name: 'Bob'}, 'foobar', 42, () => console.log('hello world')]);
+// Cloneable data types: Object, Array, string, number, boolean, and
+// function.
+clone([
+    {name: 'John'},
+    ['nested array'],
+    'foobar',
+    42,
+    true,
+    () => console.log('hello world')
+]);
 ```
 
 ### filter
@@ -18,6 +26,63 @@ const {filter} = require('objectutil');
 
 filter({key1: 'foo', key2: 'bar', key3: 'baz'}, (key) => key !== 'key2');
 // => {key1: 'foo', key3: 'baz'}
+```
+
+### toArray
+Converts an object to an array. The optional 2rd argument is a custom mapper function to return just a specific subset of each element.
+```javascript
+const {toArray} = require('objectutil');
+
+const input = {
+    'MA': {name: 'Massachusetts'},
+    'ME': {name: 'Maine'},
+    'NH': {name: 'New Hampshire'}
+};
+
+toArray(input)
+// => [{name: 'Massachusetts'}, {name: 'Maine'}, {name: 'New Hampshire'}]
+
+toArray(input, (state) => state.name)
+// => ['Massachusetts', 'Maine', 'New Hampshire']
+```
+
+### toObject
+Converts an array to an object. The 2nd argument is the key name to use. Defaults to a string index if not provided. Optional 3rd argument is a custom mapper function to return just a specific subset of the object.
+```javascript
+const {toObject} = require('objectutil');
+
+const input = [
+    {code: 'MA', name: 'Massachusetts'},
+    {code: 'ME', name: 'Maine'},
+    {code: 'NH', name: 'New Hampshire'}
+];
+
+toObject(input)
+/**
+{
+    '0': {code: 'MA', name: 'Massachusetts'},
+    '1': {code: 'ME', name: 'Maine'},
+    '2': {code: 'NH', name: 'New Hampshire'}
+}
+**/
+
+toObject(input, 'code')
+/**
+{
+    MA: {code: 'MA', name: 'Massachusetts'},
+    ME: {code: 'ME', name: 'Maine'},
+    NH: {code: 'NH', name: 'New Hampshire'}
+}
+**/
+
+toObject(input, 'code', (state) => state.name))
+/**
+{
+    MA: 'Massachusetts',
+    ME: 'Maine',
+    NH: 'New Hampshire'
+}
+**/
 ```
 
 ### safeWrap / unwrap
