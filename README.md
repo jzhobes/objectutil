@@ -5,7 +5,7 @@ A handy collection of methods related to manipulating objects.
 ### clone
 Performs a deep copy of the provided input. Supported data types at the moment are: Object, Array, Date, string, number, boolean, and function.
 ```javascript
-const {clone} = require('objectutil');
+const {clone} = require('@mountaingapsolutions/objectutil');
 
 // Cloneable data types: Object, Array, string, number, boolean, and
 // function.
@@ -22,7 +22,7 @@ clone([
 ### filter
 Similar to Array.filter, but for objects. The filter function will iterate through every key in the object.
 ```javascript
-const {filter} = require('objectutil');
+const {filter} = require('@mountaingapsolutions/objectutil');
 
 filter({key1: 'foo', key2: 'bar', key3: 'baz'}, (key) => key !== 'key2');
 // => {key1: 'foo', key3: 'baz'}
@@ -31,7 +31,7 @@ filter({key1: 'foo', key2: 'bar', key3: 'baz'}, (key) => key !== 'key2');
 ### toArray
 Converts an object to an array. The optional 2rd argument is a custom mapper function to return just a specific subset of each element.
 ```javascript
-const {toArray} = require('objectutil');
+const {toArray} = require('@mountaingapsolutions/objectutil');
 
 const input = {
     'MA': {name: 'Massachusetts'},
@@ -49,7 +49,7 @@ toArray(input, (state) => state.name)
 ### toObject
 Converts an array to an object. The 2nd argument is the key name to use. Defaults to a string index if not provided. Optional 3rd argument is a custom mapper function to return just a specific subset of the object.
 ```javascript
-const {toObject} = require('objectutil');
+const {toObject} = require('@mountaingapsolutions/objectutil');
 
 const input = [
     {code: 'MA', name: 'Massachusetts'},
@@ -88,7 +88,7 @@ toObject(input, 'code', (state) => state.name))
 ### safeWrap / unwrap
 Wraps an object to safely return any object property, ignoring any undefined errors. This is analogous to using the existential operator in TypeScript.
 ```javascript
-const {safeWrap, unwrap} = require('objectutil');
+const {safeWrap, unwrap} = require('@mountaingapsolutions/objectutil');
 
 const input = {a: {b: {c: {d: 'value'}}}};
 const wrappedInput = safeWrap(input);
@@ -102,7 +102,7 @@ unwrap(wrappedInput.a.b.c.d)
 ### updateIn
 Clones the provided array of objects and attempts to update the old object with the updated object by the specified key. If key is not provided, defaults to 'id'.
 ```javascript
-const {updateIn} = require('objectutil');
+const {updateIn} = require('@mountaingapsolutions/objectutil');
 
 const original = [{
     uuid: 0,
