@@ -1,6 +1,6 @@
 {
   "name": "@mountaingapsolutions/objectutil",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "A handy collection of methods related to manipulating objects.",
   "main": "objectutil.js",
   "scripts": {
@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/jzhobes/objectutil",
   "devDependencies": {
-    "jest": "^24.8.0"
+    "jest": "^25.1.0"
   }
 }
