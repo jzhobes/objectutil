@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/jzhobes/objectutil",
   "devDependencies": {
-    "jest": "^25.1.0"
+    "jest": "^30.2.0"
   }
 }
